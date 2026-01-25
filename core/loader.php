@@ -27,6 +27,12 @@ if (!defined('DEBUG') || DEBUG === false) {
 require_once ABSPATH . '/core/functions.php';
 
 /**
+ * Load Router and Routes
+ */
+require_once ABSPATH . '/core/classes/Router.php';
+require_once ABSPATH . '/app/routes.php';
+
+/**
  * load the application
  */
-$bFrame = new BFrame();
+Router::dispatch();

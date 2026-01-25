@@ -5,7 +5,7 @@ A lightweight, simple, and educational PHP MVC framework designed for study and 
 ## 🚀 Features
 
 - **MVC Architecture**: Clear separation of concerns between Models, Controllers, and Views.
-- **Simple Routing**: Automatic routing based on URL structure (`/controller/action/params`).
+- **Centralized Routing**: Laravel-style route definitions directly in `app/routes.php`.
 - **Environment Variables**: Manage sensitive data using `.env` files.
 - **Database Abstraction Layer**: Unified PDO-based interaction for MySQL, MariaDB, and PostgreSQL.
 - **Centralized Configuration**: All settings managed in a single `config.php` file.
@@ -57,25 +57,35 @@ HOME_URI=http://bframe.local
 - **Protect .env**: The framework includes a `.htaccess` file to block direct access to `.env` on Apache servers.
 - **Production**: In production environments, it's recommended to move the `.env` file outside of the web root or set environment variables directly at the server level (e.g., in Nginx, Apache, or Docker config).
 
-### 2. Basic Usage
+### 3. Basic Usage
+
+#### Defining Routes
+All routes are defined in `app/routes.php`.
+
+```php
+// app/routes.php
+Router::get('/', 'HomeController@index');
+Router::get('/user/{id}', 'UserController@show');
+Router::post('/contact/send', 'ContactController@send');
+```
 
 #### Creating a Controller
 Controllers should be placed in `app/controllers/` and named like `ControllerName.php`.
 
 ```php
-class MyController extends MainController {
+class HomeController extends MainController {
     public function index() {
-        $this->view('my-view', ['title' => 'Hello World']);
+        $this->view('welcome', ['title' => 'BFrame']);
     }
 }
 ```
 
 #### Creating a View
-Views go into `app/views/`. You can pass parameters from the controller to the view.
+Views go into `app/views/`.
 
 ```php
-// app/views/my-view.php
-<h1><?php echo $title; ?></h1>
+// app/views/welcome.php
+<h1>Welcome to <?php echo $title; ?></h1>
 ```
 
 ## 📄 License

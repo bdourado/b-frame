@@ -2,3 +2,10 @@
     Order allow,deny
     Deny from all
 </Files>
+
+RewriteEngine On
+
+# Redirect all requests to public/index.php
+RewriteCond %{REQUEST_FILENAME} !-f
+RewriteCond %{REQUEST_FILENAME} !-d
+RewriteRule ^(.*)$ public/index.php?path=$1 [L,QSA]
