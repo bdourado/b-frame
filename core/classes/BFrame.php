@@ -1,10 +1,10 @@
 <?php
 /**
- * Class GoldenFramework
+ * Class BFrame
  * Manage Models, Controllers and Views
  */
 
-class GoldenFramework
+class BFrame
 {
 
     /**
@@ -32,43 +32,43 @@ class GoldenFramework
 
 
     /**
-     * GoldenFramework constructor.
+     * BFrame constructor.
      * Gets the values of the controller, action, and parameters. Configures the controlled and action (method).
      */
     public function __construct()
     {
         $this->getUrlData();
 
-        if ( ! $this->controller) {
+        if (!$this->controller) {
             require_once ABSPATH . '/app/controllers/HomeController.php';
             $this->controller = new HomeController();
             $this->controller->index();
             return;
         }
 
-        if ( ! file_exists( ABSPATH . '/app/controllers/' . $this->controller . '.php' ) ) {
+        if (!file_exists(ABSPATH . '/app/controllers/' . $this->controller . '.php')) {
             require_once ABSPATH . $this->notFound;
             return;
         }
 
-        require_once ABSPATH . '/controllers/' . $this->controller . '.php';
+        require_once ABSPATH . '/app/controllers/' . $this->controller . '.php';
 
-        $this->controller = preg_replace( '/[^a-zA-Z]/i', '', $this->controller );
+        $this->controller = preg_replace('/[^a-zA-Z]/i', '', $this->controller);
 
-        if ( ! class_exists( $this->controlador ) ) {
+        if (!class_exists($this->controller)) {
             require_once ABSPATH . $this->notFound;
             return;
         }
 
-        $this->controller = new $this->controller( $this->params );
+        $this->controller = new $this->controller($this->params);
 
-        if ( method_exists( $this->controller, $this->action ) ) {
-            $this->controller->{$this->action}( $this->params );
+        if (method_exists($this->controller, $this->action)) {
+            $this->controller->{$this->action}($this->params);
             return;
         }
 
-        if ( ! $this->action && method_exists( $this->controller, 'index' ) ) {
-            $this->controller->index($this->params);
+        if (!$this->action && method_exists($this->controller, 'index')) {
+            $this->controller->index();
             return;
         }
 
@@ -84,7 +84,7 @@ class GoldenFramework
     public function getUrlData()
     {
 
-        if ( isset( $_GET['path'] ) ) {
+        if (isset($_GET['path'])) {
             $path = $_GET['path'];
 
             $path = rtrim($path, '/');
@@ -92,14 +92,14 @@ class GoldenFramework
 
             $path = explode('/', $path);
 
-            $this->controller  = check_array( $path, 0 );
+            $this->controller = check_array($path, 0);
             $this->controller .= '-controller';
-            $this->action      = check_array( $path, 1 );
+            $this->action = check_array($path, 1);
 
-            if ( check_array( $path, 2 ) ) {
-                unset( $path[0] );
-                unset( $path[1] );
-                $this->params = array_values( $path );
+            if (check_array($path, 2)) {
+                unset($path[0]);
+                unset($path[1]);
+                $this->params = array_values($path);
             }
         }
 

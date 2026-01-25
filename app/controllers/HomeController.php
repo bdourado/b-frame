@@ -7,7 +7,7 @@ class HomeController extends MainController
     public function index()
     {
         $params = [
-            'title' => 'Golden Framework',
+            'title' => 'BFrame',
             'author' => 'Bruno M. Dourado',
             'date' => date('d/m/Y', time()),
             'text' => 'Welcome to my tiny and super simple Framework',
