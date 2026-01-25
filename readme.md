@@ -10,7 +10,7 @@ A lightweight, simple, and educational PHP MVC framework designed for study and 
 - **Database Abstraction Layer**: Unified PDO-based interaction for MySQL, MariaDB, and PostgreSQL.
 - **Centralized Configuration**: All settings managed in a single `config.php` file.
 - **Auto-loading**: Core classes and controllers are loaded automatically.
-- **Friendly URLs**: Support for clean, SEO-friendly paths.
+- **Friendly URLs**: Support for clean, SEO-friendly paths using `.htaccess`.
 
 ## 📁 Project Structure
 
@@ -19,14 +19,17 @@ BFrame/
 ├── app/                # Application logic
 │   ├── controllers/    # Controller classes
 │   ├── views/          # Template files
-│   └── models/         # Data models (optional)
+│   ├── models/         # Data models
+│   └── routes.php      # Centralized routes definition
 ├── core/               # Framework core
-│   ├── classes/        # Core framework classes
+│   ├── classes/        # Core framework classes (Database, Router, etc.)
 │   ├── functions.php   # Global helper functions
 │   └── loader.php      # Application bootstrapper
-├── public/              # Web root
-│   ├── index.php       # Entry point
+├── public/              # Web root (Entry point)
+│   ├── index.php       # Main entry point
 │   └── uploads/        # Uploaded files
+├── .env                # Sensitive environment variables (ignored by git)
+├── .htaccess           # URL rewriting and security rules
 ├── config.php          # Main configuration file
 └── readme.md           # Documentation
 ```
@@ -40,9 +43,11 @@ Copy the `.env.example` file to `.env` and fill in your credentials:
 cp .env.example .env
 ```
 
-Edit the `.env` file:
+Edit the `.env` file to match your environment:
 ```env
+DB_DRIVER=mysql
 DB_HOST=localhost
+DB_PORT=3306
 DB_NAME=bframe
 DB_USER=root
 DB_PASS=your_password
@@ -50,46 +55,61 @@ DEBUG=true
 HOME_URI=http://bframe.local
 ```
 
-> [!IMPORTANT]
-> Never commit your `.env` file to version control. It is already added to `.gitignore`.
+### 2. Requirements & Setup
+- PHP 7.4+
+- Apache with `mod_rewrite` enabled (for friendly URLs)
+- PDO extensions for your chosen database (MySQL, MariaDB, or PostgreSQL)
 
-### 2. Security Best Practices
-- **Protect .env**: The framework includes a `.htaccess` file to block direct access to `.env` on Apache servers.
-- **Production**: In production environments, it's recommended to move the `.env` file outside of the web root or set environment variables directly at the server level (e.g., in Nginx, Apache, or Docker config).
+### 3. Security Best Practices
+- **Protect .env**: The internal `.htaccess` blocks public access to `.env`.
+- **Production**: For maximum security, move the `.env` file outside the `public_html` folder or set environment variables at the OS/Server level.
 
-### 3. Basic Usage
+---
 
-#### Defining Routes
-All routes are defined in `app/routes.php`.
+## 📖 Basic Usage
+
+### 🛣️ Defining Routes
+All routes are registered in `app/routes.php`.
 
 ```php
-// app/routes.php
 Router::get('/', 'HomeController@index');
 Router::get('/user/{id}', 'UserController@show');
 Router::post('/contact/send', 'ContactController@send');
 ```
 
-#### Creating a Controller
-Controllers should be placed in `app/controllers/` and named like `ControllerName.php`.
+### 💾 Database Operations
+BFrame provides a simplified PDO abstraction layer accessible in all models.
+
+```php
+// Inside a Model
+$users = Database::select('users', ['id' => 1]);
+
+Database::insert('users', [
+    'name' => 'John Doe',
+    'email' => 'john@example.com'
+]);
+```
+
+### 🎮 Controllers & Views
+Controllers should extend `MainController` and views are automatically rendered with passed parameters.
 
 ```php
 class HomeController extends MainController {
     public function index() {
-        $this->view('welcome', ['title' => 'BFrame']);
+        $this->view('welcome', [
+            'name' => 'BFrame User'
+        ]);
     }
 }
 ```
 
-#### Creating a View
-Views go into `app/views/`.
-
 ```php
 // app/views/welcome.php
-<h1>Welcome to <?php echo $title; ?></h1>
+<h1>Welcome, <?= $name ?>!</h1>
 ```
 
 ## 📄 License
-This project is for educational purposes. Feel free to use and modify!
+This project is open-source and created for educational purposes. Feel free to use and modify it!
 
 ---
 *Created by [Bruno M. Dourado](https://github.com/bdourado/)*
