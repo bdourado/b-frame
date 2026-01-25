@@ -4,17 +4,36 @@
  * @param $class_name
  */
 spl_autoload_register(function ($class_name) {
-    // Check in core classes
-    $core_file = ABSPATH . '/core/classes/' . $class_name . '.php';
-    if (file_exists($core_file)) {
-        require_once $core_file;
-        return;
+    // PSR-4 mapping for BFrame namespace
+    $prefix = 'BFrame\\';
+
+    if (strpos($class_name, $prefix) === 0) {
+        $relative_class = substr($class_name, strlen($prefix));
+
+        // BFrame\Core\ClassName -> core/Classes/ClassName.php
+        if (strpos($relative_class, 'Core\\') === 0) {
+            $base_dir = ABSPATH . '/core/Classes/';
+            $relative_class = substr($relative_class, strlen('Core\\'));
+        }
+        // BFrame\App\ClassName -> app/ClassName.php
+        elseif (strpos($relative_class, 'App\\') === 0) {
+            $base_dir = ABSPATH . '/app/';
+            $relative_class = substr($relative_class, strlen('App\\'));
+        } else {
+            return;
+        }
+
+        $file = $base_dir . str_replace('\\', '/', $relative_class) . '.php';
+        if (file_exists($file)) {
+            require_once $file;
+            return;
+        }
     }
 
-    // Check in app models
-    $model_file = ABSPATH . '/app/models/' . $class_name . '.php';
-    if (file_exists($model_file)) {
-        require_once $model_file;
+    // Fallback for non-namespaced classes (legacy support)
+    $core_file = ABSPATH . '/core/Classes/' . $class_name . '.php';
+    if (file_exists($core_file)) {
+        require_once $core_file;
         return;
     }
 });

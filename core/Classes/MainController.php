@@ -1,4 +1,7 @@
 <?php
+
+namespace BFrame\Core;
+
 /**
  * MainController - All controllers should extend this class
  */
@@ -12,7 +15,7 @@ class MainController
             extract($params);
         }
 
-        require ABSPATH . '/app/views/'.$name.'.php';
+        require ABSPATH . '/app/Views/' . $name . '.php';
     }
 
 }

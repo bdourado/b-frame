@@ -11,7 +11,7 @@ define('ABSPATH', dirname(__FILE__));
 /**
  * Load environment variables
  */
-require_once ABSPATH . '/core/classes/EnvLoader.php';
+require_once ABSPATH . '/core/Classes/EnvLoader.php';
 EnvLoader::load(ABSPATH . '/.env');
 
 /**

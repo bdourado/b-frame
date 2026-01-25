@@ -1,4 +1,7 @@
 <?php
+
+namespace BFrame\Core;
+
 /**
  * Class BFrame
  * Core Framework Bootstrapper

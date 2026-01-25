@@ -1,5 +1,9 @@
 <?php
 
+namespace BFrame\App\Controllers;
+
+use BFrame\Core\MainController;
+use BFrame\App\Models\UserModel;
 
 class HomeController extends MainController
 {

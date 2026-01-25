@@ -6,6 +6,13 @@ if (!defined('ABSPATH'))
     exit;
 
 /**
+ * Composer Autoloader (Hybrid approach)
+ */
+if (file_exists(ABSPATH . '/vendor/autoload.php')) {
+    require_once ABSPATH . '/vendor/autoload.php';
+}
+
+/**
  * start the session
  */
 session_start();
@@ -27,12 +34,11 @@ if (!defined('DEBUG') || DEBUG === false) {
 require_once ABSPATH . '/core/functions.php';
 
 /**
- * Load Router and Routes
+ * Load Routes
  */
-require_once ABSPATH . '/core/classes/Router.php';
 require_once ABSPATH . '/app/routes.php';
 
 /**
  * load the application
  */
-Router::dispatch();
+BFrame\Core\Router::dispatch();

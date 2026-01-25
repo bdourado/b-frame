@@ -1,4 +1,7 @@
 <?php
+
+namespace BFrame\Core;
+
 /**
  * Class Router
  * Centralized Routing System for BFrame
@@ -69,7 +72,7 @@ class Router
         }
 
         // 404 Not Found
-        require_once ABSPATH . '/app/views/404.php';
+        require_once ABSPATH . '/app/Views/404.php';
     }
 
     /**
@@ -79,13 +82,10 @@ class Router
     {
         list($controllerName, $method) = explode('@', $handler);
 
-        $controllerFile = ABSPATH . '/app/controllers/' . $controllerName . '.php';
-
-        if (!file_exists($controllerFile)) {
-            die("Controller $controllerName not found");
+        // Prepend app namespace if not present
+        if (strpos($controllerName, 'BFrame\\') === false) {
+            $controllerName = "BFrame\\App\\Controllers\\$controllerName";
         }
-
-        require_once $controllerFile;
 
         if (!class_exists($controllerName)) {
             die("Class $controllerName not found");

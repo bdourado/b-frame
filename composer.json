@@ -1,0 +1,24 @@
+{
+    "name": "bdourado/b-frame",
+    "description": "A lightweight, simple, and educational PHP MVC framework.",
+    "type": "project",
+    "license": "MIT",
+    "authors": [
+        {
+            "name": "Bruno M. Dourado",
+            "email": "bruno@example.com"
+        }
+    ],
+    "require": {
+        "php": ">=7.4"
+    },
+    "autoload": {
+        "psr-4": {
+            "BFrame\\Core\\": "core/Classes/",
+            "BFrame\\App\\": "app/"
+        },
+        "files": [
+            "core/functions.php"
+        ]
+    }
+}

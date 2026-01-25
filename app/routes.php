@@ -3,6 +3,8 @@
  * Application Routes
  */
 
+use BFrame\Core\Router;
+
 Router::get('/', 'HomeController@index');
 
 // Example of dynamic route

@@ -1,4 +1,11 @@
 <?php
+
+namespace BFrame\Core;
+
+use PDO;
+use PDOException;
+use PDOStatement;
+
 /**
  * Class Database
  * Simple PDO Abstraction Layer (Singleton)

@@ -1,4 +1,9 @@
 <?php
+
+namespace BFrame\App\Models;
+
+use BFrame\Core\MainModel;
+
 /**
  * Class UserModel
  * Example model representing a user

@@ -1,4 +1,7 @@
 <?php
+
+namespace BFrame\Core;
+
 /**
  * Class EnvLoader
  * Simple loader for .env files

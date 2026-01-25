@@ -1,4 +1,7 @@
 <?php
+
+namespace BFrame\Core;
+
 /**
  * MainModel - All models should extend this class
  */
