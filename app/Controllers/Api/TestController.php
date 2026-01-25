@@ -1,31 +1,31 @@
 <?php
 
+declare(strict_types=1);
+
 namespace BFrame\App\Controllers\Api;
 
 use BFrame\Core\MainController;
+use BFrame\Core\Attributes\Route;
+use BFrame\Core\Enums\HttpMethod;
 
 class TestController extends MainController
 {
-    /**
-     * GET /api/test
-     */
-    public function index()
+    #[Route('/api/test', method: HttpMethod::GET)]
+    public function index(): never
     {
         $this->json([
             'status' => 'success',
-            'message' => 'BFrame API is working!',
+            'message' => 'Modern BFrame API (PHP 8.1+)',
             'timestamp' => date('Y-m-d H:i:s')
         ]);
     }
 
-    /**
-     * POST /api/test
-     */
-    public function create()
+    #[Route('/api/test', method: HttpMethod::POST)]
+    public function create(): never
     {
         $data = $this->getBody();
 
-        if (!$data) {
+        if ($data === null) {
             $this->json(['error' => 'Invalid JSON input'], 400);
         }
 

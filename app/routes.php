@@ -1,15 +1,13 @@
 <?php
+
+declare(strict_types=1);
+
 /**
  * Application Routes
+ * (Routes can also be defined via Attributes in Controllers)
  */
 
 use BFrame\Core\Router;
 
-Router::get('/', 'HomeController@index');
-
-// API Routes
-Router::get('/api/test', 'Api\TestController@index');
-Router::post('/api/test', 'Api\TestController@create');
-
-// Example of dynamic route
-// Router::get('/user/{id}', 'UserController@show');
+// Centralized routes (Legacy/Alternative support)
+// Router::get('/legacy-contact', 'ContactController@index');

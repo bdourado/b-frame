@@ -1,5 +1,7 @@
 <?php
 
+declare(strict_types=1);
+
 namespace BFrame\Core;
 
 /**
@@ -9,38 +11,29 @@ namespace BFrame\Core;
 class EnvLoader
 {
     /**
-     * Load the .env file and set environment variables
-     * @param string $path Path to the .env file
-     * @return bool
+     * Load .env file
      */
-    public static function load($path)
+    public static function load(string $path): void
     {
         if (!file_exists($path)) {
-            return false;
+            return;
         }
 
         $lines = file($path, FILE_IGNORE_NEW_LINES | FILE_SKIP_EMPTY_LINES);
         foreach ($lines as $line) {
-            // Ignore comments
-            if (strpos(trim($line), '#') === 0) {
+            if (str_starts_with(trim($line), '#')) {
                 continue;
             }
 
-            // Split key and value
-            list($name, $value) = explode('=', $line, 2);
+            [$name, $value] = explode('=', $line, 2);
             $name = trim($name);
             $value = trim($value);
 
-            // Remove quotes if present
-            $value = trim($value, '"\'');
-
-            if (!array_key_exists($name, $_SERVER) && !array_key_exists($name, $_ENV)) {
+            if (!empty($name)) {
                 putenv(sprintf('%s=%s', $name, $value));
                 $_ENV[$name] = $value;
                 $_SERVER[$name] = $value;
             }
         }
-
-        return true;
     }
 }

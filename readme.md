@@ -4,8 +4,9 @@ A lightweight, simple, and educational PHP MVC framework designed for study and 
 
 ## 🚀 Features
 
+- **Modern PHP 8.1+**: Fully typed, utilize Enums, Attributes, and Readonly properties.
 - **MVC Architecture**: Clear separation of concerns between Models, Controllers, and Views.
-- **Centralized Routing**: Laravel-style route definitions directly in `app/routes.php`.
+- **Attribute-Based Routing**: Define routes directly in controllers or in `app/routes.php`.
 - **REST API Support**: Native JSON response and request body handling.
 - **Environment Variables**: Manage sensitive data using `.env` files.
 - **Database Abstraction Layer**: Unified PDO-based interaction for MySQL, MariaDB, and PostgreSQL.
@@ -64,7 +65,7 @@ HOME_URI=http://bframe.local
 ```
 
 ### 2. Requirements & Setup
-- PHP 7.4+
+- PHP 8.1+ (Minimum for Enums, Attributes, and Readonly properties)
 - Apache with `mod_rewrite` enabled (for friendly URLs)
 - PDO extensions for your chosen database (MySQL, MariaDB, or PostgreSQL)
 
@@ -94,12 +95,28 @@ The framework uses the `BFrame` root namespace:
 ## 📖 Basic Usage
 
 ### 🛣️ Defining Routes
-All routes are registered in `app/routes.php`.
+BFrame supports both centralized and attribute-based routing.
+
+#### Attribute-Based (Recommended)
+```php
+namespace BFrame\App\Controllers;
+
+use BFrame\Core\Attributes\Route;
+use BFrame\Core\Enums\HttpMethod;
+
+class HomeController extends MainController {
+    #[Route('/', method: HttpMethod::GET)]
+    public function index(): void {
+        $this->view('welcome', ['name' => 'BFrame User']);
+    }
+}
+```
+
+#### Centralized (Traditional)
+All routes can also be registered in `app/routes.php`.
 
 ```php
-Router::get('/', 'HomeController@index');
 Router::get('/user/{id}', 'UserController@show');
-Router::post('/contact/send', 'ContactController@send');
 ```
 
 ### 💾 Database Operations

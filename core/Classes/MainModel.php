@@ -1,6 +1,10 @@
 <?php
 
+declare(strict_types=1);
+
 namespace BFrame\Core;
+
+use PDO;
 
 /**
  * MainModel - All models should extend this class
@@ -10,7 +14,7 @@ class MainModel
     /**
      * @var PDO
      */
-    protected $db;
+    protected readonly PDO $db;
 
     /**
      * MainModel constructor.

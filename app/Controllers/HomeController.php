@@ -1,30 +1,33 @@
 <?php
 
+declare(strict_types=1);
+
 namespace BFrame\App\Controllers;
 
 use BFrame\Core\MainController;
 use BFrame\App\Models\UserModel;
+use BFrame\Core\Attributes\Route;
+use BFrame\Core\Enums\HttpMethod;
 
 class HomeController extends MainController
 {
-
-    public function index()
+    #[Route('/', method: HttpMethod::GET)]
+    public function index(): void
     {
-        // Use the example model
         $userModel = new UserModel();
         $userData = $userModel->getUser(1);
 
         $params = [
-            'title' => 'BFrame',
+            'title' => 'BFrame 8.1+',
             'author' => $userData['name'],
             'role' => $userData['role'],
-            'date' => date('d/m/Y', time()),
-            'text' => 'Welcome to BFrame, a tiny and super simple Framework',
+            'date' => date('d/m/Y'),
+            'text' => 'BFrame has been upgraded to PHP 8.1 standards!',
             'linkedin' => 'https://www.linkedin.com/in/bruno-dourado-8a6a4813/',
             'github' => 'https://github.com/bdourado/'
         ];
 
-        $this->view('welcome', $params);
+        // Example of named arguments
+        $this->view(name: 'welcome', params: $params);
     }
-
 }

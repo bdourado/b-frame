@@ -1,5 +1,7 @@
 <?php
 
+declare(strict_types=1);
+
 namespace BFrame\Core;
 
 /**
@@ -7,23 +9,28 @@ namespace BFrame\Core;
  */
 class MainController
 {
-
-
-    public function view($name, $params)
+    /**
+     * Render a view
+     */
+    public function view(string $name, array $params = []): void
     {
-        if (is_array($params)) {
+        if (!empty($params)) {
             extract($params);
         }
 
-        require ABSPATH . '/app/Views/' . $name . '.php';
+        $viewFile = ABSPATH . '/app/Views/' . $name . '.php';
+
+        if (file_exists($viewFile)) {
+            require $viewFile;
+        } else {
+            die("View $name not found");
+        }
     }
 
     /**
      * Return a JSON response
-     * @param mixed $data
-     * @param int $status
      */
-    public function json($data, $status = 200)
+    public function json(mixed $data, int $status = 200): never
     {
         header('Content-Type: application/json');
         http_response_code($status);
@@ -33,12 +40,10 @@ class MainController
 
     /**
      * Get JSON body from the request
-     * @return mixed
      */
-    public function getBody()
+    public function getBody(): ?array
     {
         $json = file_get_contents('php://input');
-        return json_decode($json, true);
+        return json_decode($json, true) ?: null;
     }
-
 }

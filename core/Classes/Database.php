@@ -1,5 +1,7 @@
 <?php
 
+declare(strict_types=1);
+
 namespace BFrame\Core;
 
 use PDO;
@@ -13,14 +15,14 @@ use PDOStatement;
 class Database
 {
     /**
-     * @var PDO
+     * @var ?PDO
      */
-    private static $instance;
+    private static ?PDO $instance = null;
 
     /**
      * @var PDO
      */
-    private $connection;
+    public readonly PDO $connection;
 
     /**
      * Database constructor.
@@ -30,7 +32,7 @@ class Database
         try {
             $driver = DB_DRIVER;
             $host = HOSTNAME;
-            $port = DB_PORT;
+            $port = (string) DB_PORT;
             $db_name = DB_NAME;
             $user = DB_USER;
             $pass = DB_PASSWORD;
@@ -62,9 +64,8 @@ class Database
 
     /**
      * Get Database Instance (Singleton)
-     * @return PDO
      */
-    public static function getInstance()
+    public static function getInstance(): PDO
     {
         if (self::$instance === null) {
             $db = new self();
@@ -76,11 +77,8 @@ class Database
 
     /**
      * Execute a SQL query with parameters
-     * @param string $sql
-     * @param array $params
-     * @return PDOStatement
      */
-    public static function query($sql, $params = [])
+    public static function query(string $sql, array $params = []): PDOStatement
     {
         $stmt = self::getInstance()->prepare($sql);
         $stmt->execute($params);
@@ -89,12 +87,9 @@ class Database
 
     /**
      * Select data from a table
-     * @param string $table
-     * @param array $conditions Key-value pairs for WHERE clause
-     * @param string $fields
-     * @return array
+     * @return array<int, array<string, mixed>>
      */
-    public static function select($table, $conditions = [], $fields = '*')
+    public static function select(string $table, array $conditions = [], string $fields = '*'): array
     {
         $sql = "SELECT $fields FROM $table";
         $params = [];
@@ -113,11 +108,8 @@ class Database
 
     /**
      * Insert data into a table
-     * @param string $table
-     * @param array $data Key-value pairs for column and value
-     * @return bool
      */
-    public static function insert($table, $data)
+    public static function insert(string $table, array $data): bool
     {
         $keys = array_keys($data);
         $fields = implode(', ', $keys);
@@ -131,10 +123,8 @@ class Database
 
     /**
      * Get last inserted ID
-     * @param string|null $name Name of the sequence object (important for PostgreSQL)
-     * @return string
      */
-    public static function lastInsertId($name = null)
+    public static function lastInsertId(?string $name = null): string|false
     {
         return self::getInstance()->lastInsertId($name);
     }
@@ -142,14 +132,10 @@ class Database
     /**
      * Prevent cloning
      */
-    private function __clone()
-    {
-    }
+    private function __clone() {}
 
     /**
      * Prevent unserialize
      */
-    private function __wakeup()
-    {
-    }
+    public function __wakeup() {}
 }
