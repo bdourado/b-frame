@@ -58,21 +58,39 @@ class Router
         $uri = isset($_GET['path']) ? $_GET['path'] : '/';
         $uri = trim($uri, '/');
         $method = $_SERVER['REQUEST_METHOD'];
+        $isApi = strpos($uri, 'api/') === 0;
 
-        foreach (self::$routes as $route) {
-            if ($route['method'] === $method && preg_match($route['pattern'], $uri, $matches)) {
-                // Filter matches to keep only named parameters
-                $params = array_filter($matches, function ($key) {
-                    return is_string($key);
-                }, ARRAY_FILTER_USE_KEY);
+        try {
+            foreach (self::$routes as $route) {
+                if ($route['method'] === $method && preg_match($route['pattern'], $uri, $matches)) {
+                    // Filter matches to keep only named parameters
+                    $params = array_filter($matches, function ($key) {
+                        return is_string($key);
+                    }, ARRAY_FILTER_USE_KEY);
 
-                self::execute($route['handler'], $params);
-                return;
+                    self::execute($route['handler'], $params);
+                    return;
+                }
             }
-        }
 
-        // 404 Not Found
-        require_once ABSPATH . '/app/Views/404.php';
+            // 404 Not Found
+            if ($isApi) {
+                header('Content-Type: application/json');
+                http_response_code(404);
+                echo json_encode(['error' => 'Resource not found', 'path' => "/$uri"]);
+                exit;
+            }
+
+            require_once ABSPATH . '/app/Views/404.php';
+        } catch (\Exception $e) {
+            if ($isApi) {
+                header('Content-Type: application/json');
+                http_response_code(500);
+                echo json_encode(['error' => 'Internal Server Error', 'message' => $e->getMessage()]);
+                exit;
+            }
+            throw $e;
+        }
     }
 
     /**

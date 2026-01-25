@@ -6,6 +6,7 @@ A lightweight, simple, and educational PHP MVC framework designed for study and 
 
 - **MVC Architecture**: Clear separation of concerns between Models, Controllers, and Views.
 - **Centralized Routing**: Laravel-style route definitions directly in `app/routes.php`.
+- **REST API Support**: Native JSON response and request body handling.
 - **Environment Variables**: Manage sensitive data using `.env` files.
 - **Database Abstraction Layer**: Unified PDO-based interaction for MySQL, MariaDB, and PostgreSQL.
 - **Centralized Configuration**: All settings managed in a single `config.php` file.
@@ -133,9 +134,47 @@ class HomeController extends MainController {
 ```
 
 ```php
-// app/views/welcome.php
+// app/Views/welcome.php
 <h1>Welcome, <?= $name ?>!</h1>
 ```
+
+---
+
+### 🌐 REST API Support
+BFrame includes native support for building RESTful APIs.
+
+#### Defining API Routes
+Register your API routes in `app/routes.php`. It's recommended to use the `/api/` prefix.
+
+```php
+Router::get('/api/test', 'Api\TestController@index');
+Router::post('/api/test', 'Api\TestController@create');
+```
+
+#### API Controller Example
+Controllers can return JSON directly using the `$this->json()` method.
+
+```php
+namespace BFrame\App\Controllers\Api;
+
+use BFrame\Core\MainController;
+
+class TestController extends MainController {
+    public function index() {
+        $this->json(['message' => 'Hello from API!']);
+    }
+
+    public function create() {
+        $data = $this->getBody(); // Helper to parse JSON input
+        $this->json(['received' => $data], 201);
+    }
+}
+```
+
+> [!NOTE]
+> Requests starting with `/api/` will automatically return JSON format for 404 errors and internal exceptions.
+
+---
 
 ## 📄 License
 This project is open-source and created for educational purposes. Feel free to use and modify it!
