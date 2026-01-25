@@ -1,0 +1,61 @@
+version: '3.8'
+
+services:
+  # PHP Application
+  app:
+    build:
+      context: .
+      dockerfile: Dockerfile
+    image: bframe-app
+    container_name: bframe-app
+    restart: unless-stopped
+    tty: true
+    environment:
+      SERVICE_NAME: app
+      SERVICE_TAGS: dev
+    volumes:
+      - ./:/var/www
+    networks:
+      - bframe-network
+
+  # Nginx Web Server
+  web:
+    image: nginx:stable-alpine
+    container_name: bframe-web
+    restart: unless-stopped
+    tty: true
+    ports:
+      - "8080:80"
+    volumes:
+      - ./:/var/www
+      - ./docker/nginx/default.conf:/etc/nginx/conf.d/default.conf
+    networks:
+      - bframe-network
+    depends_on:
+      - app
+
+  # MySQL Database
+  db:
+    image: mysql:8.0
+    container_name: bframe-db
+    restart: unless-stopped
+    tty: true
+    ports:
+      - "3306:3306"
+    environment:
+      MYSQL_DATABASE: ${DB_NAME}
+      MYSQL_ROOT_PASSWORD: ${DB_PASS}
+      MYSQL_PASSWORD: ${DB_PASS}
+      MYSQL_USER: ${DB_USER}
+    volumes:
+      - bframe-dbdata:/var/lib/mysql
+    networks:
+      - bframe-network
+
+networks:
+  bframe-network:
+    driver: bridge
+
+volumes:
+  bframe-dbdata:
+    driver: local

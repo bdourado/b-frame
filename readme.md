@@ -73,7 +73,17 @@ HOME_URI=http://bframe.local
 
 ---
 
-### 3. Namespaces
+### 3. Docker Setup (Recommended)
+You can run BFrame using Docker Compose for a complete environment (PHP, Nginx, MySQL).
+
+1. Ensure you have an `.env` file (copied from `.env.example`).
+2. Build and start the containers:
+```bash
+docker-compose up -d --build
+```
+3. Access the application at: `http://localhost:8080`
+
+### 4. Namespaces
 The framework uses the `BFrame` root namespace:
 - **Core**: `BFrame\Core` (Database, Router, MainController, etc.)
 - **App**: `BFrame\App\Controllers` and `BFrame\App\Models`
