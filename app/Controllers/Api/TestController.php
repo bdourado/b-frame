@@ -23,7 +23,7 @@ class TestController extends MainController
     #[Route('/api/test', method: HttpMethod::POST)]
     public function create(): never
     {
-        $data = $this->getBody();
+        $data = $this->body;
 
         if ($data === null) {
             $this->json(['error' => 'Invalid JSON input'], 400);

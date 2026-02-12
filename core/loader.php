@@ -6,8 +6,11 @@ if (!defined('ABSPATH'))
     exit;
 
 /**
- * Composer Autoloader (Hybrid approach)
+ * Autoloader (Custom PSR-4 or Composer fallback)
  */
+require_once ABSPATH . '/core/Autoloader.php';
+\BFrame\Core\Autoloader::register();
+
 if (file_exists(ABSPATH . '/vendor/autoload.php')) {
     require_once ABSPATH . '/vendor/autoload.php';
 }
@@ -29,9 +32,8 @@ if (!defined('DEBUG') || DEBUG === false) {
 }
 
 /**
- * global functions
+ * global functions & helpers
  */
-require_once ABSPATH . '/core/functions.php';
 
 /**
  * Load Routes

@@ -18,11 +18,11 @@ class HomeController extends MainController
         $userData = $userModel->getUser(1);
 
         $params = [
-            'title' => 'BFrame 8.1+',
+            'title' => 'BFrame',
             'author' => $userData['name'],
             'role' => $userData['role'],
             'date' => date('d/m/Y'),
-            'text' => 'BFrame has been upgraded to PHP 8.1 standards!',
+            'text' => 'BFrame is a lightweight MVC framework, focused on learning and ideal for small projects. Simple, modern, and PHP 8.4 ready.',
             'linkedin' => 'https://www.linkedin.com/in/bruno-dourado-8a6a4813/',
             'github' => 'https://github.com/bdourado/'
         ];

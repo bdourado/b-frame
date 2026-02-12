@@ -39,11 +39,12 @@ class MainController
     }
 
     /**
-     * Get JSON body from the request
+     * Get JSON body from the request (Property Hook)
      */
-    public function getBody(): ?array
-    {
-        $json = file_get_contents('php://input');
-        return json_decode($json, true) ?: null;
+    public ?array $body {
+        get {
+            $json = file_get_contents('php://input');
+            return json_decode($json, true) ?: null;
+        }
     }
 }

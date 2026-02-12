@@ -22,7 +22,7 @@ class Database
     /**
      * @var PDO
      */
-    public readonly PDO $connection;
+    public private(set) ?PDO $connection = null;
 
     /**
      * Database constructor.
@@ -55,9 +55,9 @@ class Database
 
         } catch (PDOException $e) {
             if (defined('DEBUG') && DEBUG) {
-                die("Connection Error: " . $e->getMessage());
+                throw new \RuntimeException("Connection Error: " . $e->getMessage());
             } else {
-                die("A database error occurred.");
+                throw new \RuntimeException("A database error occurred.");
             }
         }
     }
@@ -65,8 +65,12 @@ class Database
     /**
      * Get Database Instance (Singleton)
      */
-    public static function getInstance(): PDO
+    public static function getInstance(): ?PDO
     {
+        if (!defined('DB_DRIVER') || empty(DB_DRIVER)) {
+            return null;
+        }
+
         if (self::$instance === null) {
             $db = new self();
             self::$instance = $db->connection;
@@ -80,7 +84,11 @@ class Database
      */
     public static function query(string $sql, array $params = []): PDOStatement
     {
-        $stmt = self::getInstance()->prepare($sql);
+        $instance = self::getInstance();
+        if ($instance === null) {
+            throw new \RuntimeException("Database is disabled. Check your DB_DRIVER configuration.");
+        }
+        $stmt = $instance->prepare($sql);
         $stmt->execute($params);
         return $stmt;
     }
@@ -126,16 +134,24 @@ class Database
      */
     public static function lastInsertId(?string $name = null): string|false
     {
-        return self::getInstance()->lastInsertId($name);
+        $instance = self::getInstance();
+        if ($instance === null) {
+            return false;
+        }
+        return $instance->lastInsertId($name);
     }
 
     /**
      * Prevent cloning
      */
-    private function __clone() {}
+    private function __clone()
+    {
+    }
 
     /**
      * Prevent unserialize
      */
-    public function __wakeup() {}
+    public function __wakeup()
+    {
+    }
 }

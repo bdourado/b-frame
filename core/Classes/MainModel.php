@@ -14,7 +14,7 @@ class MainModel
     /**
      * @var PDO
      */
-    protected readonly PDO $db;
+    protected readonly ?PDO $db;
 
     /**
      * MainModel constructor.

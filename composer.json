@@ -10,15 +10,12 @@
         }
     ],
     "require": {
-        "php": ">=7.4"
+        "php": "^8.4"
     },
     "autoload": {
         "psr-4": {
             "BFrame\\Core\\": "core/Classes/",
             "BFrame\\App\\": "app/"
-        },
-        "files": [
-            "core/functions.php"
-        ]
+        }
     }
 }

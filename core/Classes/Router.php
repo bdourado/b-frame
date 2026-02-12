@@ -91,7 +91,8 @@ class Router
 
         foreach ($files as $file) {
             $class = self::getNamespaceFromFile($file);
-            if (!$class || !class_exists($class)) continue;
+            if (!$class || !class_exists($class))
+                continue;
 
             $reflection = new ReflectionClass($class);
             foreach ($reflection->getMethods() as $method) {
@@ -119,13 +120,13 @@ class Router
         }
 
         if (!class_exists($controllerName)) {
-            die("Class $controllerName not found");
+            throw new \RuntimeException("Class $controllerName not found");
         }
 
         $controller = new $controllerName();
 
         if (!method_exists($controller, $method)) {
-            die("Method $method not found in $controllerName");
+            throw new \RuntimeException("Method $method not found in $controllerName");
         }
 
         call_user_func_array([$controller, $method], [$params]);
@@ -160,7 +161,8 @@ class Router
         $files = [];
         $items = scandir($dir);
         foreach ($items as $item) {
-            if ($item === '.' || $item === '..') continue;
+            if ($item === '.' || $item === '..')
+                continue;
             $path = $dir . '/' . $item;
             if (is_dir($path)) {
                 $files = array_merge($files, self::getControllerFiles($path));

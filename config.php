@@ -11,6 +11,8 @@ define('ABSPATH', dirname(__FILE__));
 /**
  * Load environment variables
  */
+use BFrame\Core\EnvLoader;
+
 require_once ABSPATH . '/core/Classes/EnvLoader.php';
 EnvLoader::load(ABSPATH . '/.env');
 
@@ -27,7 +29,7 @@ define('HOME_URI', getenv('HOME_URI') ?: 'http://bframe.local');
 /**
  * database driver (mysql or pgsql)
  */
-define('DB_DRIVER', getenv('DB_DRIVER') ?: 'mysql');
+define('DB_DRIVER', getenv('DB_DRIVER') ?: '');
 
 /**
  * database host
