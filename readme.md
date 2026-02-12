@@ -25,9 +25,7 @@ Built to leverage the latest language features:
 - **Robust Autoloading**: Prioritizes Composer but includes a high-performance custom PSR-4 fallback.
 - **Centralized Routing**: Explicit, easy-to-read route definitions in `app/routes.php`.
 
-### 🎨 Premium UI
-- **Tailwind CSS**: Pre-configured with a modern dark-mode aesthetic.
-- **Glassmorphism**: Beautiful default views for Welcome, Features, 404, and 500 pages.
+
 
 ---
 
@@ -151,15 +149,34 @@ DEBUG=true
 ```text
 /
 ├── app/
-│   ├── Controllers/   # Request Handlers
-│   ├── Models/        # Data & Logic
-│   ├── Views/         # Templates (Tailwind CSS)
-│   └── routes.php     # Route Definitions
-├── core/              # Framework Core (Router, DB, etc.)
-├── public/            # Web Entry Point
-├── logs/              # Error Logs
-├── docker/            # Nginx & PHP Configs
-└── ...
+│   ├── Controllers/    # Request Handlers
+│   │   ├── Api/        # API Controllers
+│   │   └── ...
+│   ├── Models/         # Data Models
+│   ├── Views/          # Views (HTML/PHP)
+│   │   ├── errors/     # Error Pages (404, 500)
+│   │   └── ...
+│   └── routes.php      # Main Route Definitions
+├── core/               # Framework Kernel
+│   ├── Classes/        # Core Classes (Router, DB, EnvLoader)
+│   │   ├── Attributes/ # PHP 8 Attributes
+│   │   └── Enums/      # Core Enums
+│   ├── Autoloader.php  # PSR-4 Autoloader
+│   └── loader.php      # Application Bootstrapper
+├── public/             # Web Entry Point
+│   ├── index.php       # Front Controller
+│   └── uploads/        # User Uploads
+├── logs/               # Application Logs
+│   └── php_error.log   # PHP Error Log
+├── docker/             # Docker Configuration
+│   ├── nginx/          # Nginx Configs
+│   └── php/            # PHP Configs
+├── .env                # Environment Variables
+├── .gitignore          # Git Ignore Rules
+├── composer.json       # Dependencies
+├── config.php          # Main Configuration
+├── docker-compose.yml  # Container Orchestration
+└── readme.md           # Documentation
 ```
 
 ---
