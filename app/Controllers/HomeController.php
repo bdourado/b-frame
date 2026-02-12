@@ -6,12 +6,9 @@ namespace BFrame\App\Controllers;
 
 use BFrame\Core\MainController;
 use BFrame\App\Models\UserModel;
-use BFrame\Core\Attributes\Route;
-use BFrame\Core\Enums\HttpMethod;
 
 class HomeController extends MainController
 {
-    #[Route('/', method: HttpMethod::GET)]
     public function index(): void
     {
         $userModel = new UserModel();

@@ -57,14 +57,14 @@ class Router
      */
     public static function dispatch(): void
     {
-        $uri = isset($_GET['path']) ? $_GET['path'] : '/';
+        $uri = parse_url($_SERVER['REQUEST_URI'], PHP_URL_PATH);
         $uri = trim($uri, '/');
         $methodName = $_SERVER['REQUEST_METHOD'];
         $method = HttpMethod::tryFrom($methodName) ?: HttpMethod::GET;
         $isApi = str_starts_with($uri, 'api/');
 
-        // Load Attribute-based routes from controllers
-        self::loadAttributeRoutes();
+        // Load Attribute-based routes from controllers (Disabled for explicit route control)
+        // self::loadAttributeRoutes();
 
         try {
             foreach (self::$routes as $route) {

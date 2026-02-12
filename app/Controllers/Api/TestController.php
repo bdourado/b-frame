@@ -5,12 +5,9 @@ declare(strict_types=1);
 namespace BFrame\App\Controllers\Api;
 
 use BFrame\Core\MainController;
-use BFrame\Core\Attributes\Route;
-use BFrame\Core\Enums\HttpMethod;
 
 class TestController extends MainController
 {
-    #[Route('/api/test', method: HttpMethod::GET)]
     public function index(): never
     {
         $this->json([
@@ -20,7 +17,6 @@ class TestController extends MainController
         ]);
     }
 
-    #[Route('/api/test', method: HttpMethod::POST)]
     public function create(): never
     {
         $data = $this->body;

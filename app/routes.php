@@ -9,5 +9,10 @@ declare(strict_types=1);
 
 use BFrame\Core\Router;
 
-// Centralized routes (Legacy/Alternative support)
-// Router::get('/legacy-contact', 'ContactController@index');
+// Main Application Routes
+Router::get('/', 'HomeController@index');
+Router::get('/features', 'FeaturesController@index');
+
+// API Routes
+Router::get('/api/test', 'Api\TestController@index');
+Router::post('/api/test', 'Api\TestController@create');

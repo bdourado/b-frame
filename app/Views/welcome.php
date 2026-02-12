@@ -127,6 +127,9 @@
                     </div>
                 </div>
                 <div class="flex gap-4">
+                    <a href="features"
+                        class="px-5 py-2.5 rounded-xl bg-white/5 hover:bg-white/10 border border-white/10 transition-all text-sm font-medium">View
+                        Features</a>
                     <a href="<?= $linkedin ?>" target="_blank"
                         class="px-5 py-2.5 rounded-xl bg-white/5 hover:bg-white/10 border border-white/10 transition-all text-sm font-medium">LinkedIn</a>
                     <a href="<?= $github ?>" target="_blank"
