@@ -5,18 +5,18 @@ declare(strict_types=1);
 namespace BFrame\Core;
 
 use BFrame\Core\Enums\HttpMethod;
-use BFrame\Core\Attributes\Route;
-use ReflectionClass;
-use Exception;
+use RuntimeException;
+use Throwable;
 
 /**
  * Class Router
- * Modern Centralized Routing System for BFrame
+ * * A high-performance, centralized routing engine for the BFrame framework.
+ * Supports static routes, dynamic parameters, and API-aware error handling.
  */
 class Router
 {
-    /**
-     * @var array Holds all registered routes
+    /** * @var array<int, array{method: HttpMethod, pattern: string, handler: string}> 
+     * Stores registered routes with their HTTP methods and regex patterns.
      */
     private static array $routes = [];
 
@@ -37,151 +37,135 @@ class Router
     }
 
     /**
-     * Add route to the internal storage
+     * Normalizes paths and converts curly-brace placeholders into Named Regex Groups.
+     * Example: /user/{id} becomes #^user/(?P<id>[^/]+)$#D
      */
     private static function addRoute(HttpMethod $method, string $path, string $handler): void
     {
         $path = trim($path, '/');
-        $pattern = preg_replace('/\{([a-zA-Z0-9_]+)\}/', '(?P<$1>[^/]+)', $path);
-        $pattern = "#^" . $pattern . "$#";
+
+        // Convert {param} to (?P<param>[^/]+)
+        $pattern = preg_replace('/\{([a-zA-Z_][a-zA-Z0-9_]*)\}/', '(?P<$1>[^/]+)', $path);
 
         self::$routes[] = [
             'method' => $method,
-            'pattern' => $pattern,
+            'pattern' => "#^" . ($pattern === '' ? '' : $pattern) . "$#D", // 'D' modifier prevents newline bypass
             'handler' => $handler
         ];
     }
 
     /**
-     * Dispatch the request
+     * Matches the current HTTP request against registered routes.
+     * Handles 404 and 500 errors gracefully based on request type (Web vs API).
      */
     public static function dispatch(): void
     {
-        $uri = parse_url($_SERVER['REQUEST_URI'], PHP_URL_PATH);
+        // Extract URL path and sanitize
+        $uri = parse_url($_SERVER['REQUEST_URI'] ?? '/', PHP_URL_PATH) ?: '/';
         $uri = trim($uri, '/');
-        $methodName = $_SERVER['REQUEST_METHOD'];
-        $method = HttpMethod::tryFrom($methodName) ?: HttpMethod::GET;
-        $isApi = str_starts_with($uri, 'api/');
 
-        // Load Attribute-based routes from controllers (Disabled for explicit route control)
-        // self::loadAttributeRoutes();
+        // Determine HTTP Method
+        $rawMethod = $_SERVER['REQUEST_METHOD'] ?? 'GET';
+        $method = HttpMethod::tryFrom($rawMethod) ?: HttpMethod::GET;
+
+        // Check if the request is targeting an API route
+        $isApi = str_starts_with($uri, 'api/');
 
         try {
             foreach (self::$routes as $route) {
+                // Validate Method and Regex Pattern
                 if ($route['method'] === $method && preg_match($route['pattern'], $uri, $matches)) {
+
+                    // Filter matches to keep only named parameters (strings)
                     $params = array_filter($matches, fn($key) => is_string($key), ARRAY_FILTER_USE_KEY);
+
                     self::execute($route['handler'], $params);
                     return;
                 }
             }
 
             self::respondNotFound($isApi, $uri);
-        } catch (Exception $e) {
+        } catch (Throwable $e) {
             self::respondError($isApi, $e);
         }
     }
 
     /**
-     * Load routes defined in Controller Attributes
-     */
-    private static function loadAttributeRoutes(): void
-    {
-        $controllersDir = ABSPATH . '/app/Controllers';
-        $files = self::getControllerFiles($controllersDir);
-
-        foreach ($files as $file) {
-            $class = self::getNamespaceFromFile($file);
-            if (!$class || !class_exists($class))
-                continue;
-
-            $reflection = new ReflectionClass($class);
-            foreach ($reflection->getMethods() as $method) {
-                $attributes = $method->getAttributes(Route::class);
-                foreach ($attributes as $attribute) {
-                    $route = $attribute->newInstance();
-                    // Handler format: ControllerShortName@method
-                    $shortName = str_replace(['BFrame\\App\\Controllers\\', '\\'], ['', '@'], $class);
-                    $shortName = str_replace('@', '\\', $shortName); // Fix for subdirectories
-                    self::addRoute($route->method, $route->path, "$shortName@{$method->getName()}");
-                }
-            }
-        }
-    }
-
-    /**
-     * Execute the controller method
+     * Instantiates the controller and invokes the specified method.
+     * Supports "ControllerName@methodName" handler syntax.
+     * * @throws RuntimeException If class or method does not exist.
      */
     private static function execute(string $handler, array $params): void
     {
+        if (!str_contains($handler, '@')) {
+            throw new RuntimeException("Invalid handler format. Expected 'Controller@method'.");
+        }
+
         [$controllerName, $method] = explode('@', $handler);
 
+        // Prepend default namespace if it's a short class name
         if (!str_contains($controllerName, 'BFrame\\')) {
             $controllerName = "BFrame\\App\\Controllers\\$controllerName";
         }
 
         if (!class_exists($controllerName)) {
-            throw new \RuntimeException("Class $controllerName not found");
+            throw new RuntimeException("Controller class [$controllerName] not found.");
         }
 
         $controller = new $controllerName();
 
         if (!method_exists($controller, $method)) {
-            throw new \RuntimeException("Method $method not found in $controllerName");
+            throw new RuntimeException("Method [$method] not found in controller [$controllerName].");
         }
 
-        call_user_func_array([$controller, $method], [$params]);
+        // Execute using argument unpacking (PHP 8.x feature)
+        // Passes parameters as an array to the controller method
+        $controller->$method(...($params ? [$params] : []));
     }
 
+    /**
+     * Standardized 404 Not Found response.
+     */
     private static function respondNotFound(bool $isApi, string $uri): never
     {
+        http_response_code(404);
+
         if ($isApi) {
             header('Content-Type: application/json');
-            http_response_code(404);
-            echo json_encode(['error' => 'Resource not found', 'path' => "/$uri"]);
+            echo json_encode(['status' => 404, 'error' => 'Resource not found', 'path' => "/$uri"]);
             exit;
         }
 
-        require_once ABSPATH . '/app/Views/404.php';
+        $viewPath = ABSPATH . '/app/Views/404.php';
+        if (file_exists($viewPath)) {
+            require_once $viewPath;
+        } else {
+            echo "<h1>404</h1><p>Page Not Found</p>";
+        }
         exit;
     }
 
-    private static function respondError(bool $isApi, Exception $e): never
+    /**
+     * Standardized 500 Internal Server Error response.
+     * In Debug mode, it exposes the error; in Production, it shows a generic message.
+     */
+    private static function respondError(bool $isApi, Throwable $e): never
     {
+        http_response_code(500);
+
+        $showDetails = defined('DEBUG') && DEBUG === true;
+
         if ($isApi) {
             header('Content-Type: application/json');
-            http_response_code(500);
-            echo json_encode(['error' => 'Internal Server Error', 'message' => $e->getMessage()]);
+            echo json_encode([
+                'status' => 500,
+                'error' => 'Internal Server Error',
+                'message' => $showDetails ? $e->getMessage() : 'An unexpected error occurred.'
+            ]);
             exit;
         }
+
+        // Rethrow the error so it can be handled by the global error handler (loader.php)
         throw $e;
-    }
-
-    private static function getControllerFiles(string $dir): array
-    {
-        $files = [];
-        $items = scandir($dir);
-        foreach ($items as $item) {
-            if ($item === '.' || $item === '..')
-                continue;
-            $path = $dir . '/' . $item;
-            if (is_dir($path)) {
-                $files = array_merge($files, self::getControllerFiles($path));
-            } else {
-                $files[] = $path;
-            }
-        }
-        return $files;
-    }
-
-    private static function getNamespaceFromFile(string $file): ?string
-    {
-        $content = file_get_contents($file);
-        if (preg_match('/namespace\s+(.+?);/s', $content, $m)) {
-            $namespace = $m[1];
-            if (preg_match('/class\s+(\w+)/', $content, $m)) {
-                return $namespace . '\\' . $m[1];
-            }
-        }
-        return null;
     }
 }

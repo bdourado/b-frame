@@ -1,100 +1,113 @@
 # BFrame 🏆
 
-A lightweight, modern, and educational PHP MVC framework. BFrame is designed to be simple enough for study yet powerful enough for small production-ready projects.
+**A modern, lightweight, and secure PHP MVC framework optimized for PHP 8.4.**
 
-## 🚀 Modern Features (v2.0)
+BFrame provides a professional starting point for small projects and educational study, featuring a clean architecture, resilient database handling, and enterprise-grade security defaults.
 
-- **PHP 8.4 Optimized**: Built for the latest PHP standards, utilizing **Property Hooks**, **Asymmetric Visibility**, and **Never** types.
-- **Clean MVC Architecture**: Strict separation between Models, Controllers, and Views.
-- **Centralized Routing**: Explicit route management in `app/routes.php`.
-- **Bulletproof Security**: Advanced session protection (`cookie_httponly`, `cookie_samesite`, `use_strict_mode`) and automated Output Buffering.
-- **Advanced Error Handling**: Global `Throwable` catch with production-safe error masking and detailed logging to `logs/php_error.log`.
-- **Friendly URLs**: Standard clean URL routing via `REQUEST_URI`.
-- **Premium UI**: Modern default interface built with **Tailwind CSS**, featuring glassmorphism and smooth animations.
-- **Docker-Ready**: Zero-config development environment with PHP 8.4-fpm, Nginx, and MySQL.
-- **Optional Database**: Simplified PDO abstraction that works with or without an active database connection.
-- **REST API Native**: Built-in support for JSON responses and request body handling via Property Hooks (`$this->body`).
-- **PSR-4 Autoloading**: Consistent class loading following modern standards.
+---
 
-## 📁 Project Structure
+## 🚀 Key Features (v2.0)
 
-```text
-BFrame/
-├── app/                # Application logic
-│   ├── Controllers/    # Controller classes
-│   ├── Models/         # Data models
-│   ├── Views/          # Tailwind CSS templates
-│   └── routes.php      # Centralized routes definition (Primary)
-├── core/               # Framework core
-│   ├── Classes/        # Core framework classes (Database, Router, etc.)
-│   ├── Autoloader.php  # PSR-4 Autoloader implementation
-│   └── loader.php      # Application bootstrapper
-├── public/              # Web root (Entry point)
-│   ├── index.php       # Main entry point
-│   └── uploads/        # Uploaded files
-├── docker/             # Docker configuration files
-├── .env                # Environment variables (ignored by git)
-├── .htaccess           # URL rewriting for Apache
-├── Dockerfile          # PHP 8.4-fpm image definition
-├── docker-compose.yml  # Service orchestration
-├── composer.json       # Dependencies & Autoload config
-└── readme.md           # Documentation
-```
+### 🐘 PHP 8.4 Powered
+Built to leverage the latest language features:
+- **Property Hooks**: Modern data access in Controllers (`$this->body`).
+- **Asymmetric Visibility**: Secure encapsulation in Core classes.
+- **Never Return Type**: Explicit handling of redirects and JSON responses.
 
-## 🛠️ Quick Start
+### 🛡️ Enterprise-Grade Security
+- **Secure Sessions**: Pre-configured with `HttpOnly`, `SameSite=Lax`, and `Strict Mode` to prevent hijacking.
+- **Output Buffering**: Global buffering prevents "headers already sent" errors and enables safe header manipulation.
+- **XSS Protection**: Global `e()` helper for safe HTML output.
+- **Error Handling**: Production-safe error pages (500) with detailed internal logging (`logs/php_error.log`).
 
-### 1. Docker Setup (Recommended)
-BFrame is designed to run instantly with Docker.
+### ⚡ Resilient Architecture
+- **Lazy Database Connection**: The application **does not crash** if the database is offline. It degrades gracefully or serves static content.
+- **Robust Autoloading**: Prioritizes Composer but includes a high-performance custom PSR-4 fallback.
+- **Centralized Routing**: Explicit, easy-to-read route definitions in `app/routes.php`.
 
-1. Copy `.env.example` to `.env`.
-2. Start the environment:
-```bash
-docker-compose up -d --build
-```
-3. Access: `http://localhost:8080`
+### 🎨 Premium UI
+- **Tailwind CSS**: Pre-configured with a modern dark-mode aesthetic.
+- **Glassmorphism**: Beautiful default views for Welcome, Features, 404, and 500 pages.
 
-### 2. Manual Requirements
-- PHP 8.4+
-- Nginx/Apache with URL rewriting.
-- PDO Extensions (MySQL/PgSQL).
+---
 
-## 📖 Basic Usage
+## 🛠️ Requirements
 
-### 🛣️ Routing
-All routes are registered in `app/routes.php`. BFrame uses clean URLs by default.
+- **PHP 8.4** or higher
+- **Composer** (Optional, for dependencies)
+- **PDO Extension** (MySQL, PostgreSQL, or SQLite)
+- **Web Server** (Nginx, Apache, or Docker)
+
+---
+
+## 🚀 Getting Started
+
+### Option 1: Docker (Recommended)
+Get up and running in seconds with the included Docker environment.
+
+1. **Clone & Config**:
+   ```bash
+   cp .env.example .env
+   ```
+
+2. **Launch**:
+   ```bash
+   docker-compose up -d --build
+   ```
+
+3. **Visit**: [http://localhost:8080](http://localhost:8080)
+
+### Option 2: Manual Installation
+1. Configure your web server to point to `public/`.
+2. Ensure URL rewriting is enabled (redirect all requests to `index.php`).
+3. Set up your `.env` file with your database credentials.
+
+---
+
+## 📖 Documentation
+
+### 1. Routing
+Routes are defined centrally in `app/routes.php`. This provides a single source of truth for your application's endpoints.
 
 ```php
 use BFrame\Core\Router;
 
+// Web Routes
 Router::get('/', 'HomeController@index');
 Router::get('/features', 'FeaturesController@index');
-Router::get('/api/test', 'Api\TestController@index');
+
+// API Routes (automatically return JSON on error)
+Router::post('/api/users', 'Api\UserController@create');
 ```
 
-### 🎮 Controllers
-Controllers extend `BFrame\Core\MainController`. Accessing the request body is now done via a modern Property Hook.
+### 2. Controllers
+Controllers extend `BFrame\Core\MainController`. You have access to powerful helpers for Views and APIs.
 
 ```php
 namespace BFrame\App\Controllers;
 
 use BFrame\Core\MainController;
 
-class HomeController extends MainController {
-    public function index() {
-        // Render a view
-        $this->view('welcome', ['title' => 'Hello BFrame']);
+class HomeController extends MainController
+{
+    public function index()
+    {
+        // Render a view with data
+        $this->view('welcome', ['title' => 'BFrame']);
     }
 
-    public function create() {
-        // Access JSON body via Property Hook (PHP 8.4)
+    public function api()
+    {
+        // PHP 8.4 Property Hook for JSON Body
         $data = $this->body; 
-        $this->json(['status' => 'success']);
+        
+        $this->json(['received' => $data], 201);
     }
 }
 ```
 
-### 💾 Database & Models
-BFrame provide a singleton PDO wrapper. The database is optional and can be disabled in `.env` by leaving `DB_DRIVER` empty.
+### 3. Database (Singleton)
+The `Database` class is a resilient Singleton. It wraps PDO and handles connection failures gracefully.
 
 ```php
 namespace BFrame\App\Models;
@@ -102,15 +115,58 @@ namespace BFrame\App\Models;
 use BFrame\Core\Database;
 use BFrame\Core\MainModel;
 
-class UserModel extends MainModel {
-    public function getUser($id) {
-        return Database::select('users', ['id' => $id]);
+class UserModel extends MainModel
+{
+    public function find(int $id)
+    {
+        // Check if DB is actually connected before querying
+        if ($this->db) {
+            return Database::select('users', ['id' => $id]);
+        }
+        
+        // Fallback or mock data if DB is down
+        return ['id' => $id, 'name' => 'Fallback User'];
     }
 }
 ```
 
-## 📄 License
-This project is open-source under the MIT License. Created for educational purposes and lightweight development.
+### 4. Configuration
+All configuration is handled via `.env`.
+
+```ini
+DB_DRIVER=mysql
+DB_HOST=db
+DB_NAME=bframe
+DB_USER=root
+DB_PASS=1
+DEBUG=true
+```
+
+> **Note**: In production, set `DEBUG=false` to hide stack traces and show the friendly 500 Global Error page.
 
 ---
-*Maintained by [Bruno M. Dourado](https://github.com/bdourado/)*
+
+## 📂 Directory Structure
+
+```text
+/
+├── app/
+│   ├── Controllers/   # Request Handlers
+│   ├── Models/        # Data & Logic
+│   ├── Views/         # Templates (Tailwind CSS)
+│   └── routes.php     # Route Definitions
+├── core/              # Framework Core (Router, DB, etc.)
+├── public/            # Web Entry Point
+├── logs/              # Error Logs
+├── docker/            # Nginx & PHP Configs
+└── ...
+```
+
+---
+
+## 📄 License
+
+This framework is open-source software licensed under the **MIT license**.
+
+---
+*Maintained by [Bruno M. Dourado](https://github.com/bdourado)*

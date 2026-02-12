@@ -25,6 +25,6 @@ class HomeController extends MainController
         ];
 
         // Example of named arguments
-        $this->view(name: 'welcome', params: $params);
+        $this->view(view: 'welcome', data: $params);
     }
 }

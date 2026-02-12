@@ -7,105 +7,123 @@ namespace BFrame\Core;
 use PDO;
 use PDOException;
 use PDOStatement;
+use RuntimeException;
 
 /**
  * Class Database
- * Simple PDO Abstraction Layer (Singleton)
+ * High-level PDO Abstraction Layer using the Singleton Pattern.
+ * Refactored for PHP 8.4 compatibility and resilient connection handling.
  */
 class Database
 {
     /**
-     * @var ?PDO
+     * Singleton instance of PDO.
      */
     private static ?PDO $instance = null;
 
     /**
-     * @var PDO
-     */
-    public private(set) ?PDO $connection = null;
-
-    /**
-     * Database constructor.
+     * Private constructor to prevent direct instantiation.
      */
     private function __construct()
     {
-        try {
-            $driver = DB_DRIVER;
-            $host = HOSTNAME;
-            $port = (string) DB_PORT;
-            $db_name = DB_NAME;
-            $user = DB_USER;
-            $pass = DB_PASSWORD;
-            $charset = DB_CHARSET;
+    }
 
-            if ($driver === 'pgsql') {
-                $dsn = "pgsql:host=$host;port=$port;dbname=$db_name";
-            } else {
-                // mysql or mariadb
-                $dsn = "mysql:host=$host;port=$port;dbname=$db_name;charset=$charset";
-            }
+    /**
+     * Returns the Singleton instance of the PDO connection.
+     * * If DB_DRIVER is not defined or the connection fails, it returns null 
+     * instead of throwing a fatal exception, allowing the app to degrade gracefully.
+     * * @return PDO|null The active connection or null if unavailable.
+     */
+    public static function getInstance(): ?PDO
+    {
+        if (self::$instance !== null) {
+            return self::$instance;
+        }
+
+        /**
+         * Check if the Database Driver is configured in the environment.
+         * If not set, we assume the application can run without a database.
+         */
+        if (!defined('DB_DRIVER') || empty(DB_DRIVER)) {
+            return null;
+        }
+
+        try {
+            $dsn = self::buildDsn();
 
             $options = [
                 PDO::ATTR_ERRMODE => PDO::ERRMODE_EXCEPTION,
                 PDO::ATTR_DEFAULT_FETCH_MODE => PDO::FETCH_ASSOC,
                 PDO::ATTR_EMULATE_PREPARES => false,
+                PDO::ATTR_PERSISTENT => false,
+                PDO::ATTR_TIMEOUT => 2, // Fail fast (2s) if host is unreachable
             ];
 
-            $this->connection = new PDO($dsn, $user, $pass, $options);
+            self::$instance = new PDO($dsn, DB_USER, DB_PASSWORD, $options);
+            return self::$instance;
 
         } catch (PDOException $e) {
-            if (defined('DEBUG') && DEBUG) {
-                throw new \RuntimeException("Connection Error: " . $e->getMessage());
-            } else {
-                throw new \RuntimeException("A database error occurred.");
-            }
-        }
-    }
-
-    /**
-     * Get Database Instance (Singleton)
-     */
-    public static function getInstance(): ?PDO
-    {
-        if (!defined('DB_DRIVER') || empty(DB_DRIVER)) {
+            /**
+             * Instead of crashing the whole app, we log the error to the server logs.
+             * This prevents "Temporary failure in name resolution" from stopping the site.
+             */
+            error_log("BFrame Database Connection Failed: " . $e->getMessage());
             return null;
         }
-
-        if (self::$instance === null) {
-            $db = new self();
-            self::$instance = $db->connection;
-        }
-
-        return self::$instance;
     }
 
     /**
-     * Execute a SQL query with parameters
+     * Constructs the Data Source Name (DSN) string based on the driver.
+     */
+    private static function buildDsn(): string
+    {
+        $driver = DB_DRIVER;
+        $host = HOSTNAME;
+        $port = (string) DB_PORT;
+        $dbName = DB_NAME;
+        $charset = DB_CHARSET;
+
+        return match ($driver) {
+            'pgsql' => "pgsql:host=$host;port=$port;dbname=$dbName",
+            'sqlite' => "sqlite:$dbName",
+            default => "mysql:host=$host;port=$port;dbname=$dbName;charset=$charset",
+        };
+    }
+
+    /**
+     * Executes a SQL query with parameters using Prepared Statements.
+     * * @throws RuntimeException If the database connection is not available.
      */
     public static function query(string $sql, array $params = []): PDOStatement
     {
-        $instance = self::getInstance();
-        if ($instance === null) {
-            throw new \RuntimeException("Database is disabled. Check your DB_DRIVER configuration.");
+        $pdo = self::getInstance();
+
+        if (!$pdo) {
+            throw new RuntimeException("Query failed: Database connection is offline or unconfigured.");
         }
-        $stmt = $instance->prepare($sql);
+
+        $stmt = $pdo->prepare($sql);
         $stmt->execute($params);
         return $stmt;
     }
 
     /**
-     * Select data from a table
+     * Simple helper to select data from a specific table.
+     * * @param string $table Table name.
+     * @param array<string, mixed> $conditions WHERE clause as ['column' => 'value'].
+     * @param string $fields Comma separated fields.
      * @return array<int, array<string, mixed>>
      */
     public static function select(string $table, array $conditions = [], string $fields = '*'): array
     {
-        $sql = "SELECT $fields FROM $table";
+        $sql = "SELECT $fields FROM `$table`";
         $params = [];
 
         if (!empty($conditions)) {
             $where = [];
             foreach ($conditions as $key => $value) {
-                $where[] = "$key = :$key";
+                // Use backticks to escape column names for SQL safety
+                $where[] = "`$key` = :$key";
                 $params[$key] = $value;
             }
             $sql .= " WHERE " . implode(' AND ', $where);
@@ -115,43 +133,41 @@ class Database
     }
 
     /**
-     * Insert data into a table
+     * Simple helper to insert data into a table.
+     * * @param string $table Table name.
+     * @param array<string, mixed> $data Associative array of data to insert.
      */
     public static function insert(string $table, array $data): bool
     {
         $keys = array_keys($data);
-        $fields = implode(', ', $keys);
+        $fields = '`' . implode('`, `', $keys) . '`';
         $placeholders = ':' . implode(', :', $keys);
 
-        $sql = "INSERT INTO $table ($fields) VALUES ($placeholders)";
+        $sql = "INSERT INTO `$table` ($fields) VALUES ($placeholders)";
 
-        $stmt = self::query($sql, $data);
-        return $stmt instanceof PDOStatement;
+        return self::query($sql, $data) instanceof PDOStatement;
     }
 
     /**
-     * Get last inserted ID
+     * Returns the ID of the last inserted row or sequence value.
      */
     public static function lastInsertId(?string $name = null): string|false
     {
-        $instance = self::getInstance();
-        if ($instance === null) {
-            return false;
-        }
-        return $instance->lastInsertId($name);
+        return self::getInstance()?->lastInsertId($name) ?? false;
     }
 
     /**
-     * Prevent cloning
+     * Prevent object cloning to maintain Singleton integrity.
      */
     private function __clone()
     {
     }
 
     /**
-     * Prevent unserialize
+     * Prevent object unserialization.
      */
     public function __wakeup()
     {
+        throw new RuntimeException("Serialization of Singleton classes is prohibited.");
     }
 }
