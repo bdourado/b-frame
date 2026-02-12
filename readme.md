@@ -1,18 +1,20 @@
 # BFrame 🏆
 
-A lightweight, simple, and educational PHP MVC framework designed for study and small projects.
+A lightweight, modern, and educational PHP MVC framework. BFrame is designed to be simple enough for study yet powerful enough for small production-ready projects.
 
-## 🚀 Features
+## 🚀 Modern Features (v2.0)
 
-- **Modern PHP 8.1+**: Fully typed, utilize Enums, Attributes, and Readonly properties.
-- **MVC Architecture**: Clear separation of concerns between Models, Controllers, and Views.
-- **Attribute-Based Routing**: Define routes directly in controllers or in `app/routes.php`.
-- **REST API Support**: Native JSON response and request body handling.
-- **Environment Variables**: Manage sensitive data using `.env` files.
-- **Database Abstraction Layer**: Unified PDO-based interaction for MySQL, MariaDB, and PostgreSQL.
-- **Centralized Configuration**: All settings managed in a single `config.php` file.
-- **Auto-loading**: Core classes and controllers are loaded automatically.
-- **Friendly URLs**: Support for clean, SEO-friendly paths using `.htaccess`.
+- **PHP 8.4 Optimized**: Built for the latest PHP standards, utilizing **Property Hooks**, **Asymmetric Visibility**, and **Never** types.
+- **Clean MVC Architecture**: Strict separation between Models, Controllers, and Views.
+- **Centralized Routing**: Explicit route management in `app/routes.php`.
+- **Bulletproof Security**: Advanced session protection (`cookie_httponly`, `cookie_samesite`, `use_strict_mode`) and automated Output Buffering.
+- **Advanced Error Handling**: Global `Throwable` catch with production-safe error masking and detailed logging to `logs/php_error.log`.
+- **Friendly URLs**: Standard clean URL routing via `REQUEST_URI`.
+- **Premium UI**: Modern default interface built with **Tailwind CSS**, featuring glassmorphism and smooth animations.
+- **Docker-Ready**: Zero-config development environment with PHP 8.4-fpm, Nginx, and MySQL.
+- **Optional Database**: Simplified PDO abstraction that works with or without an active database connection.
+- **REST API Native**: Built-in support for JSON responses and request body handling via Property Hooks (`$this->body`).
+- **PSR-4 Autoloading**: Consistent class loading following modern standards.
 
 ## 📁 Project Structure
 
@@ -20,107 +22,79 @@ A lightweight, simple, and educational PHP MVC framework designed for study and 
 BFrame/
 ├── app/                # Application logic
 │   ├── Controllers/    # Controller classes
-│   ├── Views/          # Template files
 │   ├── Models/         # Data models
-│   └── routes.php      # Centralized routes definition
+│   ├── Views/          # Tailwind CSS templates
+│   └── routes.php      # Centralized routes definition (Primary)
 ├── core/               # Framework core
 │   ├── Classes/        # Core framework classes (Database, Router, etc.)
-│   ├── functions.php   # Global helper functions
+│   ├── Autoloader.php  # PSR-4 Autoloader implementation
 │   └── loader.php      # Application bootstrapper
 ├── public/              # Web root (Entry point)
 │   ├── index.php       # Main entry point
 │   └── uploads/        # Uploaded files
-├── .env                # Sensitive environment variables (ignored by git)
-├── .htaccess           # URL rewriting and security rules
-├── composer.json       # Composer configuration
-├── config.php          # Main configuration file
+├── docker/             # Docker configuration files
+├── .env                # Environment variables (ignored by git)
+├── .htaccess           # URL rewriting for Apache
+├── Dockerfile          # PHP 8.4-fpm image definition
+├── docker-compose.yml  # Service orchestration
+├── composer.json       # Dependencies & Autoload config
 └── readme.md           # Documentation
 ```
 
-## 🛠️ Getting Started
+## 🛠️ Quick Start
 
-### 1. Installation
-BFrame works natively but supports Composer for dependency management.
+### 1. Docker Setup (Recommended)
+BFrame is designed to run instantly with Docker.
 
-```bash
-# Optional: Install dependencies if using Composer
-composer install
-```
-
-Copy the `.env.example` file to `.env`:
-```bash
-cp .env.example .env
-```
-
-Edit the `.env` file to match your environment:
-```env
-DB_DRIVER=mysql
-DB_HOST=localhost
-DB_PORT=3306
-DB_NAME=bframe
-DB_USER=root
-DB_PASS=your_password
-DEBUG=true
-HOME_URI=http://bframe.local
-```
-
-### 2. Requirements & Setup
-- PHP 8.1+ (Minimum for Enums, Attributes, and Readonly properties)
-- Apache with `mod_rewrite` enabled (for friendly URLs)
-- PDO extensions for your chosen database (MySQL, MariaDB, or PostgreSQL)
-
-### 3. Security Best Practices
-- **Protect .env**: The internal `.htaccess` blocks public access to `.env`.
-- **Production**: For maximum security, move the `.env` file outside the `public_html` folder or set environment variables at the OS/Server level.
-
----
-
-### 3. Docker Setup (Recommended)
-You can run BFrame using Docker Compose for a complete environment (PHP, Nginx, MySQL).
-
-1. Ensure you have an `.env` file (copied from `.env.example`).
-2. Build and start the containers:
+1. Copy `.env.example` to `.env`.
+2. Start the environment:
 ```bash
 docker-compose up -d --build
 ```
-3. Access the application at: `http://localhost:8080`
+3. Access: `http://localhost:8080`
 
-### 4. Namespaces
-The framework uses the `BFrame` root namespace:
-- **Core**: `BFrame\Core` (Database, Router, MainController, etc.)
-- **App**: `BFrame\App\Controllers` and `BFrame\App\Models`
-
----
+### 2. Manual Requirements
+- PHP 8.4+
+- Nginx/Apache with URL rewriting.
+- PDO Extensions (MySQL/PgSQL).
 
 ## 📖 Basic Usage
 
-### 🛣️ Defining Routes
-BFrame supports both centralized and attribute-based routing.
+### 🛣️ Routing
+All routes are registered in `app/routes.php`. BFrame uses clean URLs by default.
 
-#### Attribute-Based (Recommended)
+```php
+use BFrame\Core\Router;
+
+Router::get('/', 'HomeController@index');
+Router::get('/features', 'FeaturesController@index');
+Router::get('/api/test', 'Api\TestController@index');
+```
+
+### 🎮 Controllers
+Controllers extend `BFrame\Core\MainController`. Accessing the request body is now done via a modern Property Hook.
+
 ```php
 namespace BFrame\App\Controllers;
 
-use BFrame\Core\Attributes\Route;
-use BFrame\Core\Enums\HttpMethod;
+use BFrame\Core\MainController;
 
 class HomeController extends MainController {
-    #[Route('/', method: HttpMethod::GET)]
-    public function index(): void {
-        $this->view('welcome', ['name' => 'BFrame User']);
+    public function index() {
+        // Render a view
+        $this->view('welcome', ['title' => 'Hello BFrame']);
+    }
+
+    public function create() {
+        // Access JSON body via Property Hook (PHP 8.4)
+        $data = $this->body; 
+        $this->json(['status' => 'success']);
     }
 }
 ```
 
-#### Centralized (Traditional)
-All routes can also be registered in `app/routes.php`.
-
-```php
-Router::get('/user/{id}', 'UserController@show');
-```
-
-### 💾 Database Operations
-BFrame provides a simplified PDO abstraction layer. Models should extend `BFrame\Core\MainModel`.
+### 💾 Database & Models
+BFrame provide a singleton PDO wrapper. The database is optional and can be disabled in `.env` by leaving `DB_DRIVER` empty.
 
 ```php
 namespace BFrame\App\Models;
@@ -129,72 +103,14 @@ use BFrame\Core\Database;
 use BFrame\Core\MainModel;
 
 class UserModel extends MainModel {
-    public function find($id) {
+    public function getUser($id) {
         return Database::select('users', ['id' => $id]);
     }
 }
 ```
 
-### 🎮 Controllers & Views
-Controllers should extend `BFrame\Core\MainController`.
-
-```php
-namespace BFrame\App\Controllers;
-
-use BFrame\Core\MainController;
-
-class HomeController extends MainController {
-    public function index() {
-        $this->view('welcome', ['name' => 'BFrame User']);
-    }
-}
-```
-
-```php
-// app/Views/welcome.php
-<h1>Welcome, <?= $name ?>!</h1>
-```
-
----
-
-### 🌐 REST API Support
-BFrame includes native support for building RESTful APIs.
-
-#### Defining API Routes
-Register your API routes in `app/routes.php`. It's recommended to use the `/api/` prefix.
-
-```php
-Router::get('/api/test', 'Api\TestController@index');
-Router::post('/api/test', 'Api\TestController@create');
-```
-
-#### API Controller Example
-Controllers can return JSON directly using the `$this->json()` method.
-
-```php
-namespace BFrame\App\Controllers\Api;
-
-use BFrame\Core\MainController;
-
-class TestController extends MainController {
-    public function index() {
-        $this->json(['message' => 'Hello from API!']);
-    }
-
-    public function create() {
-        $data = $this->getBody(); // Helper to parse JSON input
-        $this->json(['received' => $data], 201);
-    }
-}
-```
-
-> [!NOTE]
-> Requests starting with `/api/` will automatically return JSON format for 404 errors and internal exceptions.
-
----
-
 ## 📄 License
-This project is open-source and created for educational purposes. Feel free to use and modify it!
+This project is open-source under the MIT License. Created for educational purposes and lightweight development.
 
 ---
-*Created by [Bruno M. Dourado](https://github.com/bdourado/)*
+*Maintained by [Bruno M. Dourado](https://github.com/bdourado/)*
